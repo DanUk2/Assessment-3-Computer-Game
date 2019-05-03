@@ -2,6 +2,7 @@
 import pygame as pg
 import random
 from settings import *
+from sprites import *
 
 
 class Game:
@@ -17,6 +18,13 @@ class Game:
     def new(self):
         #start new game
         self.all_sprites = pg.sprite.Group()
+        self.platforms = pg.sprite.Group()
+        self.player = Player(self)
+        self.all_sprites.add(self.player)
+        for plat in PLATFORM_LIST:
+            p = Platform(*plat)
+            self.all_sprites.add(p)
+            self.platforms.add(p)
         self.run()
 
     def run(self):
@@ -31,6 +39,12 @@ class Game:
     def update(self):
         #game loop update
         self.all_sprites.update()
+        #check if player hits a platform - only if falling
+        if self.player.vel.y > 0:
+            hits = pg.sprite.spritecollide(self.player, self.platforms, False)
+            if hits:
+                self.player.pos.y = hits[0].rect.top
+                self.player.vel.y = 0
 
     def events(self):
         #game loop events
@@ -40,6 +54,9 @@ class Game:
                 if self.playing:
                     self.playing = False
                 self.running = False
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    self.player.jump()
 
     def draw(self):
         #game loop draw
