@@ -17,6 +17,7 @@ class Game:
 
     def new(self):
         #start new game
+
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
         self.player = Player(self)
@@ -43,8 +44,25 @@ class Game:
         if self.player.vel.y > 0:
             hits = pg.sprite.spritecollide(self.player, self.platforms, False)
             if hits:
-                self.player.pos.y = hits[0].rect.top
-                self.player.vel.y = 0
+                lowest = hits[0]
+                for hit in hits:
+                    if hit.rect.bottom > lowest.rect.bottom:
+                        lowest = hit
+                if self.player.pos.y < lowest.rect.bottom:
+                    self.player.pos.y = lowest.rect.top
+                    self.player.vel.y = 0
+        #if player reachs end of screen
+        if self.player.rect.left <= WIDTH - 800:
+            self.player.pos.x += abs(self.player.vel.x)
+            for plat in self.platforms:
+                plat.rect.x += abs(self.player.vel.x)
+
+        if self.player.rect.right >= WIDTH - 224:
+            self.player.pos.x -= abs(self.player.vel.x)
+            for plat in self.platforms:
+                plat.rect.x -= abs(self.player.vel.x)
+
+
 
     def events(self):
         #game loop events
@@ -58,10 +76,13 @@ class Game:
                 if event.key == pg.K_SPACE:
                     self.player.jump()
 
+
+
     def draw(self):
         #game loop draw
         self.screen.fill(BLACK)
         self.all_sprites.draw(self.screen)
+        self.screen.blit(self.player.image, self.player.rect)
         # *after* drawing everything, flip the display
         pg.display.flip()
 
