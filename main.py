@@ -17,11 +17,11 @@ class Game:
 
     def new(self):
         #start new game
-
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
         self.player = Player(self)
         self.all_sprites.add(self.player)
+        self.bullets = pg.sprite.Group()
         for plat in PLATFORM_LIST:
             p = Platform(*plat)
             self.all_sprites.add(p)
@@ -67,25 +67,57 @@ class Game:
 
     def events(self):
         #game loop events
+        global left
+        global right
         for event in pg.event.get():
             # check for closing window
             if event.type == pg.QUIT:
                 if self.playing:
                     self.playing = False
                 self.running = False
+            # check for jump
             if event.type == pg.KEYDOWN:
-                if event.key == pg.K_SPACE:
+                if event.key == pg.K_w:
                     self.player.jump()
             if event.type == pg.KEYUP:
-                if event.key == pg.K_SPACE:
+                if event.key == pg.K_w:
                     self.player.jump_cut()
+            # detect direction
+            keys = pg.key.get_pressed()
+            if keys[pg.K_a]:
+                left = True
+                right = False
+
+            if keys[pg.K_d]:
+                right = True
+                left = False
+            # check for shoot
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    if right:
+                        self.bullet = Bullet_right(self.player.rect.centerx, self.player.rect.top)
+                        self.all_sprites.add(self.bullet)
+                        self.bullets.add(self.bullet)
+                    elif left:
+                # if event.key == pg.K_LEFT:
+                        self.bullet = Bullet_left(self.player.rect.left - 20, self.player.rect.top)
+                        self.all_sprites.add(self.bullet)
+                        self.bullets.add(self.bullet)
+                    else:
+                        self.bullet = Bullet_right(self.player.rect.centerx, self.player.rect.top)
+                        self.all_sprites.add(self.bullet)
+                        self.bullets.add(self.bullet)
+                # if event.key == pg.K_UP:
+                #     self.bullet = Bullet_up(self.player.rect.centerx - 25, self.player.rect.top - 30)
+                #     self.all_sprites.add(self.bullet)
+                #     self.bullets.add(self.bullet)
 
 
 
 
     def draw(self):
         #game loop draw
-        self.screen.fill(BLACK)
+        self.screen.blit(bg, (0,0))
         self.all_sprites.draw(self.screen)
         self.screen.blit(self.player.image, self.player.rect)
         # *after* drawing everything, flip the display
