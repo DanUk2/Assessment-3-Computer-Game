@@ -27,6 +27,8 @@ p2win3 = pg.image.load('img/p2/win3.png')
 
 
 
+
+
 left = False
 right = False
 
@@ -47,6 +49,7 @@ class Player(pg.sprite.Sprite):
         self.current_frame = 0
         self.last_update = 0
         self.load_images()
+        self.load_sounds()
         self.image = self.standing_frames_r[0]
         self.rect = self.image.get_rect()
         self.rect.center = (40, 400)
@@ -54,6 +57,8 @@ class Player(pg.sprite.Sprite):
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
+    def load_sounds(self):
+        self.jump_sound = pg.mixer.Sound('snd/jump.wav')
     def load_images(self):
         self.standing_frames_r = [pg.image.load('img/p1/shooting3.png')]
         self.standing_frames_l = []
@@ -78,6 +83,7 @@ class Player(pg.sprite.Sprite):
         hits = pg.sprite.spritecollide(self, self.game.platforms, False)
         self.rect.x -= 2
         if hits and not self.jumping:
+            self.jump_sound.play()
             self.jumping = True
             self.vel.y = -PLAYER_JUMP
 
@@ -180,6 +186,7 @@ class Player2(pg.sprite.Sprite):
         self.current_frame = 0
         self.last_update = 0
         self.load_images()
+        self.load_sounds()
         self.image = self.standing_frames_r[0]
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH - 40, 400)
@@ -187,6 +194,8 @@ class Player2(pg.sprite.Sprite):
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
+    def load_sounds(self):
+        self.jump_sound = pg.mixer.Sound('snd/jump.wav')
     def load_images(self):
         self.standing_frames_r = [pg.image.load('img/p2/shooting3.png')]
         self.standing_frames_l = []
@@ -211,6 +220,7 @@ class Player2(pg.sprite.Sprite):
         hits = pg.sprite.spritecollide(self, self.game.platforms, False)
         self.rect.x -= 2
         if hits and not self.jumping:
+            self.jump_sound.play()
             self.jumping = True
             self.vel.y = -PLAYER_JUMP
 
