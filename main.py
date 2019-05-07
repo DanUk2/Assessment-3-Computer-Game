@@ -1,9 +1,28 @@
 # platformer
 import pygame as pg
 import random
+import pygame, sys
 from settings import *
 from sprites import *
 
+#HUD functions
+
+def draw_player_health(surf, x, y, pct):
+    if pct < 0:
+        pct = 0
+    BAR_LENGTH = 200
+    BAR_HEIGHT = 35
+    fill = pct * BAR_LENGTH
+    outline_rect = pg.Rect(x, y, BAR_LENGTH, BAR_HEIGHT)
+    fill_rect = pg.Rect(x, y, fill, BAR_HEIGHT)
+    if pct > 0.6:
+        col = GREEN
+    elif pct > 0.3:
+        col = YELLOW
+    else:
+        col = RED
+    pg.draw.rect(surf, col, fill_rect)
+    pg.draw.rect(surf, WHITE, outline_rect, 2)
 
 class Game:
     def __init__(self):
@@ -14,22 +33,27 @@ class Game:
         pg.display.set_caption("My Game")
         self.clock = pg.time.Clock()
         self.running = True
+        sys.setrecursionlimit(2000)
 
     def new(self):
         #start new game
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
-        self.player2 = Player2(self)
-        self.player = Player(self)
-        self.health_bars = health_bars()
-        self.all_sprites.add(self.player)
-        self.all_sprites.add(self.player2)
         self.p1bullets = pg.sprite.Group()
         self.p2bullets = pg.sprite.Group()
+        self.crates = pg.sprite.Group()
+        self.player2 = Player2(self)
+        self.player = Player(self)
+        self.all_sprites.add(self.player)
+        self.all_sprites.add(self.player2)
         for plat in PLATFORM_LIST:
             p = Platform(*plat)
             self.all_sprites.add(p)
             self.platforms.add(p)
+        for crate in CRATE_LIST:
+            c = Crate(*crate)
+            self.all_sprites.add(c)
+            self.crates.add(c)
         self.run()
 
     def run(self):
@@ -72,14 +96,14 @@ class Game:
         # check if hit
         player_hit = pg.sprite.spritecollide(self.player, self.p2bullets, False)
         if player_hit:
-            self.player.health -= 1
+            self.player.health -= PLAYER_DAMAGE
             for self.p2bullet in player_hit:
                 self.p2bullet.kill()
 
         # check if player 2 hit
         player2_hit = pg.sprite.spritecollide(self.player2, self.p1bullets, False)
         if player2_hit:
-            self.player2.health -= 1
+            self.player2.health -= PLAYER_DAMAGE
             for self.p1bullet in player2_hit:
                 self.p1bullet.kill()
 
@@ -187,8 +211,10 @@ class Game:
         self.all_sprites.draw(self.screen)
         self.screen.blit(self.player2.image, self.player2.rect)
         self.screen.blit(self.player.image, self.player.rect)
-        self.screen.blit(self.health_bars.health_bar1, self.health_bars.bar1_rect)
-        self.screen.blit(self.health_bars.health_bar2, self.health_bars.bar2_rect)
+        self.screen.blit(p1head, (20, 5))
+        self.screen.blit(p2head, (WIDTH - 103, 5))
+        draw_player_health(self.screen, 100, 35, self.player.health / PLAYER_HEALTH)
+        draw_player_health(self.screen, WIDTH - 300, 35, self.player2.health / PLAYER_HEALTH)
         # *after* drawing everything, flip the display
         pg.display.flip()
 
