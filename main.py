@@ -24,6 +24,7 @@ def draw_player_health(surf, x, y, pct):
     pg.draw.rect(surf, col, fill_rect)
     pg.draw.rect(surf, WHITE, outline_rect, 2)
 
+
 class Game:
     def __init__(self):
         #create game window
@@ -33,10 +34,10 @@ class Game:
         pg.display.set_caption("My Game")
         self.clock = pg.time.Clock()
         self.running = True
-        sys.setrecursionlimit(2000)
 
     def new(self):
         #start new game
+        p1wins = 0
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
         self.p1bullets = pg.sprite.Group()
@@ -44,6 +45,8 @@ class Game:
         self.crates = pg.sprite.Group()
         self.player2 = Player2(self)
         self.player = Player(self)
+        self.player1wins = p1win0
+        self.player2wins = p2win0
         self.all_sprites.add(self.player)
         self.all_sprites.add(self.player2)
         for plat in PLATFORM_LIST:
@@ -51,9 +54,9 @@ class Game:
             self.all_sprites.add(p)
             self.platforms.add(p)
         for crate in CRATE_LIST:
-            c = Crate(*crate)
-            self.all_sprites.add(c)
-            self.crates.add(c)
+            self.crate = Crate(*crate)
+            self.all_sprites.add(self.crate)
+            self.crates.add(self.crate)
         self.run()
 
     def run(self):
@@ -76,13 +79,13 @@ class Game:
                 for hit in hits:
                     if hit.rect.bottom > lowest.rect.bottom:
                         lowest = hit
-                if self.player.pos.y < lowest.rect.centery:
+                if self.player.pos.y <= lowest.rect.centery:
                     self.player.pos.y = lowest.rect.top
                     self.player.vel.y = 0
                     self.player.jumping = False
         # player 2 check
         if self.player2.vel.y > 0:
-            hits = pg.sprite.spritecollide(self.player2, self.platforms, False)
+            hits = pg.sprite.spritecollide(self.player2, self.platforms or self.crates, False)
             if hits:
                 lowest = hits[0]
                 for hit in hits:
@@ -92,6 +95,13 @@ class Game:
                     self.player2.pos.y = lowest.rect.top
                     self.player2.vel.y = 0
                     self.player2.jumping = False
+        #bullets hitting cover
+        cover_hit = pg.sprite.groupcollide(self.crates, self.p1bullets, False, True)
+        for hit in cover_hit:
+            hit.health -= PLAYER_DAMAGE
+        cover_hit = pg.sprite.groupcollide(self.crates, self.p2bullets, False, True)
+        for hit in cover_hit:
+            hit.health -= PLAYER_DAMAGE
 
         # check if hit
         player_hit = pg.sprite.spritecollide(self.player, self.p2bullets, False)
@@ -106,6 +116,23 @@ class Game:
             self.player2.health -= PLAYER_DAMAGE
             for self.p1bullet in player2_hit:
                 self.p1bullet.kill()
+        # check if player 1 won
+        if self.player2.p1wins == 1:
+            self.player1wins = p1win1
+        if self.player2.p1wins == 2:
+            self.player1wins = p1win2
+        if self.player2.p1wins == 3:
+            self.player1wins = p1win3
+        # check if player 2 won
+        if self.player.p2wins == 1:
+            self.player2wins = p2win1
+        if self.player.p2wins == 2:
+            self.player2wins = p2win2
+        if self.player.p2wins == 3:
+            self.player2wins = p2win3
+
+
+
 
         #if player reachs end of screen
         # if self.player.rect.left <= WIDTH - 800:
@@ -209,10 +236,15 @@ class Game:
         #game loop draw
         self.screen.blit(bg, (0, 0))
         self.all_sprites.draw(self.screen)
+        for sprite in self.all_sprites:
+            if isinstance(sprite, Crate):
+                sprite.draw_health()
         self.screen.blit(self.player2.image, self.player2.rect)
         self.screen.blit(self.player.image, self.player.rect)
         self.screen.blit(p1head, (20, 5))
         self.screen.blit(p2head, (WIDTH - 103, 5))
+        self.screen.blit(self.player1wins, (100, 80))
+        self.screen.blit(self.player2wins, (WIDTH - 180, 80))
         draw_player_health(self.screen, 100, 35, self.player.health / PLAYER_HEALTH)
         draw_player_health(self.screen, WIDTH - 300, 35, self.player2.health / PLAYER_HEALTH)
         # *after* drawing everything, flip the display
