@@ -1,6 +1,7 @@
 #sprite classes for platform Game
 import pygame as pg
 from settings import *
+import random
 
 vec = pg.math.Vector2
 
@@ -13,16 +14,28 @@ bg = pg.image.load('img/bg.png')
 p1head = pg.image.load('img/p1head.png')
 p2head = pg.image.load('img/p2head.png')
 crate = pg.image.load('img/crate.png')
+p1win0 = pg.image.load('img/p1/win0.png')
+p1win1 = pg.image.load('img/p1/win1.png')
+p1win2 = pg.image.load('img/p1/win2.png')
+p1win3 = pg.image.load('img/p1/win3.png')
+p2win0 = pg.image.load('img/p2/win0.png')
+p2win1 = pg.image.load('img/p2/win1.png')
+p2win2 = pg.image.load('img/p2/win2.png')
+p2win3 = pg.image.load('img/p2/win3.png')
+
 
 
 left = False
 right = False
 
 
+spawnpoints = [(40, 400), (WIDTH - 40, 400), (40, 200), (WIDTH - 40, 200), (WIDTH / 2, 100), (WIDTH / 2, 180)]
+
 class Player(pg.sprite.Sprite):
     def __init__(self, game):
         pg.sprite.Sprite.__init__(self)
         self.game = game
+        self.p2wins = 0
         self.health = PLAYER_HEALTH
         self.walking = False
         self.jumping = False
@@ -34,8 +47,8 @@ class Player(pg.sprite.Sprite):
         self.load_images()
         self.image = self.standing_frames_r[0]
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.pos = vec(WIDTH / 2, HEIGHT / 2)
+        self.rect.center = (40, 400)
+        self.pos = vec(40, 400)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
@@ -96,7 +109,7 @@ class Player(pg.sprite.Sprite):
 
         # player death
         if self.health <= 0:
-            self.kill()
+            self.respawn()
 
         self.rect.midbottom = self.pos
 
@@ -145,11 +158,17 @@ class Player(pg.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.bottom = bottom
 
+    def respawn(self):
+        self.p2wins += 1
+        self.health = PLAYER_HEALTH
+        self.pos = vec(random.choice(spawnpoints))
+        self.rect.center = self.pos
 
 class Player2(pg.sprite.Sprite):
     def __init__(self, game):
         pg.sprite.Sprite.__init__(self)
         self.game = game
+        self.p1wins = 0
         self.health = PLAYER_HEALTH
         self.walking = False
         self.jumping = False
@@ -161,8 +180,8 @@ class Player2(pg.sprite.Sprite):
         self.load_images()
         self.image = self.standing_frames_r[0]
         self.rect = self.image.get_rect()
-        self.rect.center = (WIDTH / 2, HEIGHT / 2)
-        self.pos = vec(WIDTH / 2, HEIGHT / 2)
+        self.rect.center = (WIDTH - 40, 400)
+        self.pos = vec(WIDTH - 40, 400)
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
 
@@ -225,7 +244,7 @@ class Player2(pg.sprite.Sprite):
 
         # player death
         if self.health <= 0:
-            self.kill()
+            self.respawn()
 
     def animate(self):
         now = pg.time.get_ticks()
@@ -272,6 +291,12 @@ class Player2(pg.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.bottom = bottom
 
+    def respawn(self):
+        self.p1wins += 1
+        self.health = PLAYER_HEALTH
+        self.pos = vec(random.choice(spawnpoints))
+        self.rect.center = self.pos
+
 class Crate(pg.sprite.Sprite):
     def __init__(self, x, y):
         pg.sprite.Sprite.__init__(self)
@@ -279,6 +304,21 @@ class Crate(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.health = 400
+    def update(self):
+        if self.health <= 0:
+            self.kill()
+    def draw_health(self):
+        if self.health > 200 * 0.6:
+            col = GREEN
+        elif self.health > 200 * 0.3:
+            col = YELLOW
+        else:
+            col = RED
+        width = int(self.rect.width * self.health / 100)
+        self.health_bar = pg.Rect(0, 0, width, 7)
+        if self.health < 200:
+            pg.draw.rect(self.image, col, self.health_bar)
 
 class Platform(pg.sprite.Sprite):
     def __init__(self, x, y, w, h):
