@@ -34,6 +34,7 @@ class Game:
         pg.display.set_caption("My Game")
         self.clock = pg.time.Clock()
         self.running = True
+        self.font_name = pg.font.match_font(FONT_NAME)
 
     def new(self):
         #start new game
@@ -45,6 +46,7 @@ class Game:
         self.crates = pg.sprite.Group()
         self.player2 = Player2(self)
         self.player = Player(self)
+        self.winner = p1head
         self.player1wins = p1win0
         self.player2wins = p2win0
         self.all_sprites.add(self.player)
@@ -122,14 +124,18 @@ class Game:
         if self.player2.p1wins == 2:
             self.player1wins = p1win2
         if self.player2.p1wins == 3:
+            self.winner = p1head
             self.player1wins = p1win3
+            self.playing = False
         # check if player 2 won
         if self.player.p2wins == 1:
             self.player2wins = p2win1
         if self.player.p2wins == 2:
             self.player2wins = p2win2
         if self.player.p2wins == 3:
+            self.winner = p2head
             self.player2wins = p2win3
+            self.playing = False
 
 
 
@@ -252,11 +258,37 @@ class Game:
 
     def show_start_screen(self):
         #start screen
-        pass
+        self.screen.blit(ts, (0, 0))
+        pg.display.flip()
+        self.wait_for_key()
+
 
     def show_go_screen(self):
         #game over screen
-        pass
+        if not self.running:
+            return
+        self.screen.blit(ws, (0, 0))
+        self.screen.blit(self.winner, (WIDTH / 2, HEIGHT / 2))
+        pg.display.flip()
+        self.wait_for_key()
+
+    def wait_for_key(self):
+        waiting = True
+        while waiting:
+            self.clock.tick(FPS)
+            for event in pg.event.get():
+                if event.type == pg.QUIT:
+                    waiting = False
+                    self.running = False
+                if event.type == pg.KEYUP:
+                    waiting = False
+
+    def draw_text(self, text, size, colour, x, y):
+        font = pg.font.Font(self.font_name, size)
+        text_surface = font.render(text, True, colour)
+        text_rect = text_surface.get_rect()
+        text_rect.midtop = (x, y)
+        self.screen.blit(text_surface, text_rect)
 
 g = Game()
 g.show_start_screen()
