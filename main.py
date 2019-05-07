@@ -35,9 +35,14 @@ class Game:
         self.clock = pg.time.Clock()
         self.running = True
         self.font_name = pg.font.match_font(FONT_NAME)
+        self.menu_sound = pg.mixer.Sound('snd/menu.wav')
 
     def new(self):
         #start new game
+        self.shoot_sound = pg.mixer.Sound('snd/shoot.wav')
+        self.damage_sound = pg.mixer.Sound('snd/damage.wav')
+        self.dink_sound = pg.mixer.Sound('snd/dink.wav')
+        # self.menu_sound = pg.mixer.Sound('snd/menu.wav')
         p1wins = 0
         self.all_sprites = pg.sprite.Group()
         self.platforms = pg.sprite.Group()
@@ -59,16 +64,19 @@ class Game:
             self.crate = Crate(*crate)
             self.all_sprites.add(self.crate)
             self.crates.add(self.crate)
+        pg.mixer.music.load('snd/music.mp3')
         self.run()
 
     def run(self):
         #game loop
+        pg.mixer.music.play(loops=-1)
         self.playing = True
         while self.playing:
             self.clock.tick(FPS)
             self.events()
             self.update()
             self.draw()
+        pg.mixer.music.fadeout(500)
 
     def update(self):
         #game loop update
@@ -100,14 +108,18 @@ class Game:
         #bullets hitting cover
         cover_hit = pg.sprite.groupcollide(self.crates, self.p1bullets, False, True)
         for hit in cover_hit:
+            self.dink_sound.play()
             hit.health -= PLAYER_DAMAGE
+
         cover_hit = pg.sprite.groupcollide(self.crates, self.p2bullets, False, True)
         for hit in cover_hit:
+            self.dink_sound.play()
             hit.health -= PLAYER_DAMAGE
 
         # check if hit
         player_hit = pg.sprite.spritecollide(self.player, self.p2bullets, False)
         if player_hit:
+            self.damage_sound.play()
             self.player.health -= PLAYER_DAMAGE
             for self.p2bullet in player_hit:
                 self.p2bullet.kill()
@@ -115,6 +127,7 @@ class Game:
         # check if player 2 hit
         player2_hit = pg.sprite.spritecollide(self.player2, self.p1bullets, False)
         if player2_hit:
+            self.damage_sound.play()
             self.player2.health -= PLAYER_DAMAGE
             for self.p1bullet in player2_hit:
                 self.p1bullet.kill()
@@ -185,6 +198,7 @@ class Game:
             # check for shoot
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
+                    self.shoot_sound.play()
                     if right:
                         self.p1bullet = Bullet_right(self.player.rect.centerx, self.player.rect.centery - 5)
                         self.all_sprites.add(self.p1bullet)
@@ -217,6 +231,7 @@ class Game:
             # player 2 check for shoot
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_RCTRL:
+                    self.shoot_sound.play()
                     if right2:
                         self.p2bullet = Bullet_right(self.player2.rect.centerx, self.player2.rect.centery - 5)
                         self.p2bullet.image = bullet2
@@ -281,6 +296,7 @@ class Game:
                     waiting = False
                     self.running = False
                 if event.type == pg.KEYUP:
+                    self.menu_sound.play()
                     waiting = False
 
     def draw_text(self, text, size, colour, x, y):
