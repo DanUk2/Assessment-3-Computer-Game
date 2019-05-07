@@ -10,54 +10,20 @@ bullet = pg.image.load('img/bullet.png')
 bullet2 = pg.image.load('img/bullet2.png')
 bullet2left = pg.transform.flip(bullet2, True, False)
 bg = pg.image.load('img/bg.png')
+p1head = pg.image.load('img/p1head.png')
+p2head = pg.image.load('img/p2head.png')
+crate = pg.image.load('img/crate.png')
 
 
 left = False
 right = False
 
 
-class health_bars(pg.sprite.Sprite):
-    def __init__(self):
-        pg.sprite.Sprite.__init__(self)
-        self.player1_health = 100
-        self.player2_health = 100
-
-        self.player1_health_colour = GREEN
-        self.player2_health_colour = GREEN
-
-        self.health_bar1 = pg.Surface((self.player1_health, 25))
-        self.health_bar1.fill(self.player1_health_colour)
-        self.health_bar2 = pg.Surface((self.player2_health, 25))
-        self.health_bar2.fill(self.player2_health_colour)
-
-        self.bar1_rect = self.health_bar1.get_rect()
-        self.bar1_rect.x = 50
-        self.bar1_rect.y = 25
-        self.bar2_rect = self.health_bar2.get_rect()
-        self.bar2_rect.x = WIDTH - 50
-        self.bar2_rect.y = 25
-
-    def update(self):
-        if self.player1_health > 75:
-            self.player1_health_colour = GREEN
-        elif self.player1_health > 50:
-            self.player1_health_colour = YELLOW
-        else:
-            self.player1_health_colour = RED
-
-        if self.player2_health > 75:
-            self.player2_health_colour = GREEN
-        elif self.player2_health > 50:
-            self.player2_health_colour = YELLOW
-        else:
-            self.player2_health_colour = RED
-
-
 class Player(pg.sprite.Sprite):
     def __init__(self, game):
         pg.sprite.Sprite.__init__(self)
         self.game = game
-        self.health = 10
+        self.health = PLAYER_HEALTH
         self.walking = False
         self.jumping = False
         self.shooting = False
@@ -179,11 +145,12 @@ class Player(pg.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.bottom = bottom
 
+
 class Player2(pg.sprite.Sprite):
     def __init__(self, game):
         pg.sprite.Sprite.__init__(self)
         self.game = game
-        self.health = 10
+        self.health = PLAYER_HEALTH
         self.walking = False
         self.jumping = False
         self.shooting = False
@@ -305,6 +272,14 @@ class Player2(pg.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.bottom = bottom
 
+class Crate(pg.sprite.Sprite):
+    def __init__(self, x, y):
+        pg.sprite.Sprite.__init__(self)
+        self.image = crate
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
 class Platform(pg.sprite.Sprite):
     def __init__(self, x, y, w, h):
         pg.sprite.Sprite.__init__(self)
@@ -348,20 +323,3 @@ class Bullet_left(pg.sprite.Sprite):
         self.rect.x -= self.speed
         if self.rect.right < 0:
             self.kill()
-
-
-# class Bullet_up(pg.sprite.Sprite):
-#     def __init__(self, x, y):
-#         pg.sprite.Sprite.__init__(self)
-#         self.image = bullet
-#         self.image = pg.transform.rotate(bullet, 90)
-#         self.rect = self.image.get_rect()
-#         self.rect.x = x
-#         self.rect.y = y
-#         self.speed = PROJECTILE_SPEED
-#
-#
-#     def update(self):
-#         self.rect.y -= self.speed
-#         if self.rect.bottom < 0:
-#             self.kill()
