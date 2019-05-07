@@ -1,8 +1,9 @@
 #game options
-TITLE = "wonknodi"
+TITLE = "MEGABATTLE"
 WIDTH = 960
 HEIGHT = 540
 FPS = 60
+FONT_NAME = 'arial'
 
 #player properties
 
